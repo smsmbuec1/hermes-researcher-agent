@@ -74,20 +74,36 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
 
-      # --- Confirm Hermes discovers every deployed skill ---
-      - name: Verify discovery
+      # --- Verify: (1) files landed at the right path (deterministic, what the
+      # --- deploy controls), then (2) Hermes actually discovers each skill.
+      # --- researcher lives in ~/.local/bin, which is not on a non-interactive
+      # --- PATH, so it is added explicitly. COLUMNS is forced wide because the
+      # --- skills-list table truncates long names without a TTY (e.g. "resea..."). ---
+      - name: Verify deployment
         run: |
           set -euo pipefail
-          listing="$(ssh -i ~/.ssh/id_deploy -p "${SSH_PORT:-22}" \
-            "${SSH_USER}@${SSH_HOST}" "bash -lc 'researcher skills list'")"
           while IFS=$'\t' read -r src cat name; do
-            if echo "$listing" | grep -q "$name"; then
-              echo "ok: $name discovered"
+            dest="${DEPLOY_PATH}/${cat}/${name}"
+            if ssh -i ~/.ssh/id_deploy -p "${SSH_PORT:-22}" \
+                 "${SSH_USER}@${SSH_HOST}" "test -f '${dest}/SKILL.md'"; then
+              echo "ok: ${name} present at ${dest}"
             else
-              echo "MISSING: $name not in 'researcher skills list'"; exit 1
+              echo "MISSING FILES: ${dest}/SKILL.md not found on VPS"; exit 1
+            fi
+          done < /tmp/skills.tsv
+
+          listing="$(ssh -i ~/.ssh/id_deploy -p "${SSH_PORT:-22}" \
+            "${SSH_USER}@${SSH_HOST}" \
+            'PATH="$HOME/.local/bin:$PATH" COLUMNS=200 researcher skills list')"
+          while IFS=$'\t' read -r src cat name; do
+            if echo "$listing" | grep -qF "$name"; then
+              echo "ok: ${name} discovered by Hermes"
+            else
+              echo "NOT DISCOVERED: ${name} absent from 'researcher skills list'"; exit 1
             fi
           done < /tmp/skills.tsv
         env:
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
