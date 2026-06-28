@@ -79,7 +79,7 @@ jobs:
         run: |
           set -euo pipefail
           listing="$(ssh -i ~/.ssh/id_deploy -p "${SSH_PORT:-22}" \
-            "${SSH_USER}@${SSH_HOST}" 'researcher skills list')"
+            "${SSH_USER}@${SSH_HOST}" "bash -lc 'researcher skills list'")"
           while IFS=$'\t' read -r src cat name; do
             if echo "$listing" | grep -q "$name"; then
               echo "ok: $name discovered"
