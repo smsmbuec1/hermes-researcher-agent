@@ -81,6 +81,43 @@ accepted by `tap add` but then `search`, `inspect`, and `install` resolve nothin
 (NousResearch/hermes-agent issue #14290, open as of April 2026). If this skill ever moves
 to internal git, use Deploy A; the tap path will silently fail.
 
+## CI/CD (GitHub Actions)
+
+Deploy A is automated as a manual GitHub Actions pipeline. Two workflows in
+`.github/workflows/`:
+
+- `ci.yml` — on every push and PR. Validates the good and bad lead fixtures in
+  `tests/fixtures/` against the schema (good must pass, bad must be rejected) and checks
+  the schema parses. This is the contract gate.
+- `deploy.yml` — manual only (`workflow_dispatch`; type `deploy` to confirm). Re-runs the
+  contract gate, then for every skill it discovers under `skills/`, rsyncs it to the VPS.
+
+Trigger a deploy from the Actions tab, or:
+
+    gh workflow run deploy.yml -f confirm=deploy
+
+How it scales to multiple skills without per-skill config: `ci/skills_manifest.py` walks
+`skills/*/`, reads `metadata.hermes.category` from each `SKILL.md`, and emits
+`<dir> <category> <name>`. The deploy places each skill at
+`$DEPLOY_PATH/<category>/<name>` with `--delete` scoped to that one folder — so it prunes
+stale files inside a skill but never touches builtins, other categories, `config.yaml`, or
+the archive. Add a skill folder with a `category:` in its frontmatter and it ships on the
+next deploy; no workflow or secret change.
+
+Five GitHub Actions secrets drive it (Settings -> Secrets and variables -> Actions):
+
+- `SSH_PRIVATE_KEY` — a dedicated deploy keypair; public half in the VPS
+  `~/.ssh/authorized_keys`, private half here. Revoke by removing the authorized_keys line.
+- `SSH_HOST`, `SSH_USER` (root), `SSH_PORT` (22)
+- `DEPLOY_PATH` — the profile skills ROOT, not a per-skill path:
+  `/root/.hermes/profiles/researcher/skills`. The workflow appends `<category>/<name>`.
+
+VPS gotcha worth knowing: `researcher` is a binary at `~/.local/bin/researcher`, which is
+on PATH only in interactive shells. A non-interactive `ssh host 'researcher ...'` returns
+127, and a login shell (`bash -lc`) does not fix it. The verify step calls it with
+`PATH="$HOME/.local/bin:$PATH"` and forces `COLUMNS=200` so the skills-list table does not
+truncate long skill names without a TTY.
+
 ## Profile
 
 This runs as its own profile (call it `researcher`), separate from the `alife` digest. The
