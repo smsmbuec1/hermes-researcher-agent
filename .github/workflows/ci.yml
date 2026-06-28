@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Good lead must validate (exit 0)
+        run: |
+          python3 skills/research-lead-finder/scripts/record_lead.py \
+            --lead tests/fixtures/good_lead.json --validate-only
+
+      - name: Bad lead must be rejected (exit non-zero)
+        run: |
+          if python3 skills/research-lead-finder/scripts/record_lead.py \
+               --lead tests/fixtures/bad_lead.json --validate-only; then
+            echo "ERROR: bad lead unexpectedly passed validation"
+            exit 1
+          else
+            echo "OK: bad lead correctly rejected by the contract"
+          fi
+
+      - name: Lead schema is valid JSON
+        run: python3 -c "import json; json.load(open('skills/research-lead-finder/references/lead-schema.json'))"

@@ -1,0 +1,20 @@
+{
+  "goal_ref": "open-endedness-mechanisms",
+  "claim": "These two papers are both about open-endedness.",
+  "join_rationale": "They share a subfield.",
+  "sources": [
+    {
+      "arxiv_id": "2502.18864",
+      "title": "Example paper with no grounding quote"
+    }
+  ],
+  "grounding": {
+    "support_type": "abstract",
+    "assessed": true,
+    "note": "No supporting quote attached; should be rejected by the contract."
+  },
+  "novelty_note": "not found in current archive / searched set",
+  "status": "candidate",
+  "run_id": "ci-fixture",
+  "emitted_by": "research-lead-finder@0.1.0"
+}

@@ -1,0 +1,26 @@
+{
+  "goal_ref": "open-endedness-mechanisms",
+  "claim": "Novelty search and minimal-criterion coevolution share a stagnation failure mode when the criterion is too weak to constrain the archive.",
+  "join_rationale": "Joining the novelty-archive saturation analysis from the first paper with the criterion-threshold argument from the second yields a single shared condition under which both processes stall.",
+  "sources": [
+    {
+      "arxiv_id": "2502.18864",
+      "title": "Example novelty-search paper",
+      "supporting_quote": "the archive saturates when novelty pressure is unbounded"
+    },
+    {
+      "arxiv_id": "2501.00001",
+      "title": "Example minimal-criterion coevolution paper",
+      "supporting_quote": "a criterion that is too permissive fails to drive continued adaptation"
+    }
+  ],
+  "grounding": {
+    "support_type": "abstract",
+    "assessed": true,
+    "note": "Both quotes drawn from abstracts; full-text verification warranted for the saturation mechanism but not performed this run."
+  },
+  "novelty_note": "not found in current archive / searched set",
+  "status": "candidate",
+  "run_id": "ci-fixture",
+  "emitted_by": "research-lead-finder@0.1.0"
+}
