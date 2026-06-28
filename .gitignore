@@ -1,0 +1,20 @@
+# Lead data and any runtime archive — data, not source. The archive lives under
+# $HERMES_HOME/data/ outside this repo, but guard against accidental commits anyway.
+*.jsonl
+data/
+
+# Hermes secrets and profile state — never commit these
+config.yaml
+.env
+auth.json
+*.session
+.hub/
+
+# Developer reference material — context for programming/setup, not shipped
+Sources/
+
+# Python
+__pycache__/
+*.pyc
+
+.DS_Store

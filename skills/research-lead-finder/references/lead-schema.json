@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Research lead",
+  "description": "Auditable output contract for one lead emitted by research-lead-finder. A lead is a specific, checkable connection or tension between retrieved sources that bears on the goal. It is not a topic, a summary, or a restatement that two papers share an area.",
+  "type": "object",
+  "required": ["id", "goal_ref", "claim", "join_rationale", "sources", "grounding", "novelty_note", "status", "run_id", "created_at", "emitted_by"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable identifier: sha1 of the normalized claim text. Used for dedup against the archive. record_lead.py computes this if absent."
+    },
+    "goal_ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Short slug of the goal this lead serves, from references/goal.md."
+    },
+    "claim": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The lead itself. A specific connection or tension that bears on the goal and could be checked. Not a topic and not a summary."
+    },
+    "join_rationale": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Which retrieved items were joined and why this specific connection follows. The combinatorial step made explicit."
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["arxiv_id", "title", "supporting_quote"],
+        "additionalProperties": false,
+        "properties": {
+          "arxiv_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "arXiv identifier of a paper returned by retrieval this run."
+          },
+          "title": {"type": "string", "minLength": 1},
+          "supporting_quote": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Verbatim span from the abstract (or noted full text) that supports this lead's use of the source. Grounding must be point-to-able. A paraphrase is not a supporting quote."
+          }
+        }
+      }
+    },
+    "grounding": {
+      "type": "object",
+      "required": ["support_type", "assessed", "note"],
+      "additionalProperties": false,
+      "properties": {
+        "support_type": {
+          "type": "string",
+          "enum": ["abstract", "full_text", "partial", "inferred"],
+          "description": "What the supporting_quotes are drawn from. 'inferred' means no direct textual support was found: a disclosed weakness, not a pass."
+        },
+        "assessed": {
+          "type": "boolean",
+          "description": "True only if every source's supporting_quote was checked against the source text this run."
+        },
+        "note": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Honest grounding note. State partial or inferred support plainly. Flag if full-text verification is warranted but was not done."
+        }
+      }
+    },
+    "novelty_note": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Honest novelty statement. At MVP this can only say 'not found in current archive / searched set'. Never 'unexplored' or 'novel to the field'."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["candidate"],
+      "description": "MVP emits 'candidate'. v1 tournament and QD ranking extend this enum."
+    },
+    "run_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "minLength": 1, "description": "ISO-8601 timestamp."},
+    "emitted_by": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Skill name and version, e.g. research-lead-finder@0.1.0. Provenance."
+    }
+  }
+}
